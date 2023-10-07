@@ -4,12 +4,12 @@ Improve air travel, satellite services, and the industry. Creativity is encourag
 
 # About
 We are a team of five for NASA's Space Apps Challenge 2023:
-Ashlyn Hall
-Chandan Tamariya
-Aubrey Cloud
-Pintilei Bianca-Emilia
-Alec Halici
-Abdul Rehman
+- Ashlyn Hall
+- Chandan Tamariya
+- Aubrey Cloud
+- Pintilei Bianca-Emilia
+- Alec Halici
+- Abdul Rehman
 
 The NASA Space Apps Challenge is an annual international hackathon-style event organized by NASA (the National Aeronautics and Space Administration) in collaboration with various partners. It brings together people from all over the world interested in space, science, and technology to work on innovative solutions to real-world problems related to space exploration and Earth science. It's a competition, a learning experience, and a way for space enthusiasts and innovators to contribute to NASA's missions and scientific endeavors. We are excited and honored to be part of this event to compete worldwide!
 
@@ -17,4 +17,4 @@ Our team worked on the STAR: Revolutionizing Technical Standards with AI to "cre
 
 
 This website provides a software setup guide. So, let's rock out!
-Official team web page at SpaceAppsChallenge.org
+- Official team web page at SpaceAppsChallenge.org
