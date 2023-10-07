@@ -18,3 +18,8 @@ Our team worked on the STAR: Revolutionizing Technical Standards with AI to "cre
 
 This website provides a software setup guide. So, let's rock out!
 - Official team web page at SpaceAppsChallenge.org
+
+# Short Project Summary
+
+# Detailed Project Summary
+
