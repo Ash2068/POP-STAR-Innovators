@@ -16,6 +16,3 @@ Our team has focused on the project STAR: Revolutionizing Technical Standards wi
 
 This website serves as a software setup guide, and we're excited to make a significant impact in this endeavor! Let's rock it!
 
-- Official team webpage on SpaceAppsChallenge.org
-- Video
-
