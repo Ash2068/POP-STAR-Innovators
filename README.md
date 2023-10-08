@@ -9,7 +9,6 @@ We are a five-member team participating in NASA's Space Apps Challenge 2023.
 - Aubrey Cloud
 - Pintilei Bianca-Emilia
 - Alec Halici
-- Abdul Rehman
 
 The NASA Space Apps Challenge is an annual international hackathon-style event organized by NASA (the National Aeronautics and Space Administration) in collaboration with various partners. It brings together individuals from all over the world who share an interest in space, science, and technology to collaborate on innovative solutions for real-world challenges in space exploration and Earth science. This event serves as a competition, a valuable learning experience, and an opportunity for space enthusiasts and innovators to contribute to NASA's missions and scientific endeavors. We are thrilled and honored to participate in this global competition!
 
@@ -18,8 +17,5 @@ Our team has focused on the project STAR: Revolutionizing Technical Standards wi
 This website serves as a software setup guide, and we're excited to make a significant impact in this endeavor! Let's rock it!
 
 - Official team webpage on SpaceAppsChallenge.org
-
-# Short Project Summary
-
-# Detailed Project Summary
+- Video
 
