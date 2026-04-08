@@ -36,3 +36,14 @@ def update_policy_tracker(doc_path, sheet_path):
 
 # Usage
 # update_policy_tracker('documentation.md', 'NIST_Tracker.xlsx')
+
+# chatbot_logic.py
+nist_explanations = {
+    "AC-1": "Access Control Policy and Procedures. This is the foundation for who gets into your systems.",
+    "PR.AC-1": "NIST CSF Core: Identities and credentials are managed for authorized devices and users.",
+    # Add more mappings here
+}
+
+def get_chatbot_explanation(policy_id):
+    explanation = nist_explanations.get(policy_id, "I don't have a specific explanation for that control yet.")
+    return f"Bot: You highlighted {policy_id}. {explanation}"
