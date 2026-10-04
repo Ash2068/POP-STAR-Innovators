@@ -1,12 +1,836 @@
-<div id="policy-document">
-    The organization must limit information system access to authorized users 
-    (Reference: <span class="policy-highlight" data-policy="AC-1">AC-1</span>).
-</div>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Policy Navigator — NIST &amp; IT Policy Explainer</title>
 <style>
-.policy-highlight {
-    background-color: yellow;
-    cursor: pointer;
-    font-weight: bold;
-}
+  :root{
+    --ink:#1b2430;
+    --ink-soft:#4a5568;
+    --paper:#f6f3ea;
+    --paper-line:#e2dcc9;
+    --panel:#ffffff;
+    --mark:#f5c451;
+    --mark-active:#e8a33d;
+    --accent:#2f5d50;
+    --accent-soft:#dce8e2;
+    --border:#d8d2bd;
+    --bot-bubble:#eef2f0;
+    --user-bubble:#2f5d50;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    line-height:1.5;
+  }
+  header{
+    padding:28px clamp(16px,4vw,48px) 20px;
+    border-bottom:1px solid var(--paper-line);
+  }
+  header h1{
+    font-family:Georgia,"Source Serif 4",serif;
+    font-size:clamp(24px,3vw,32px);
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    margin:0;
+    color:var(--ink-soft);
+    max-width:640px;
+    font-size:15px;
+  }
+  main{
+    display:grid;
+    grid-template-columns:270px 1.3fr 1fr;
+    gap:0;
+    min-height:calc(100vh - 118px);
+  }
+  @media (max-width:1150px){
+    main{grid-template-columns:1fr 1fr;}
+    aside.tree{grid-column:1 / -1; max-height:none; border-right:none; border-bottom:1px solid var(--paper-line);}
+  }
+  @media (max-width:860px){
+    main{grid-template-columns:1fr;}
+    section.doc{border-right:none;}
+  }
+  section.doc{
+    padding:24px clamp(16px,4vw,40px);
+    border-right:1px solid var(--paper-line);
+  }
+  section.doc h2, section.chat h2{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+    font-weight:600;
+  }
+  textarea#docInput{
+    width:100%;
+    min-height:150px;
+    padding:14px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    font-family:Georgia,"Source Serif 4",serif;
+    font-size:15px;
+    resize:vertical;
+    background:var(--panel);
+    color:var(--ink);
+  }
+  .doc-actions{
+    display:flex;
+    gap:10px;
+    margin:12px 0 22px;
+    flex-wrap:wrap;
+  }
+  button{
+    font-family:inherit;
+    font-size:14px;
+    border:none;
+    border-radius:6px;
+    padding:10px 16px;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  button.primary{
+    background:var(--accent);
+    color:#fff;
+  }
+  button.primary:hover{background:#25473d;}
+  button.ghost{
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--border);
+  }
+  button.ghost:hover{background:var(--accent-soft);}
+  #renderedDoc{
+    font-family:Georgia,"Source Serif 4",serif;
+    font-size:16.5px;
+    line-height:1.75;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:22px 24px;
+    max-width:70ch;
+    white-space:pre-wrap;
+  }
+  #renderedDoc .empty{
+    color:var(--ink-soft);
+    font-style:italic;
+    font-family:inherit;
+  }
+  mark.control{
+    background:var(--mark);
+    color:var(--ink);
+    padding:1px 3px;
+    border-radius:3px;
+    cursor:pointer;
+    font-weight:600;
+    border:none;
+  }
+  mark.control:hover{background:var(--mark-active);}
+  mark.term{
+    background:var(--accent-soft);
+    color:var(--accent);
+    padding:1px 3px;
+    border-radius:3px;
+    cursor:pointer;
+    font-weight:600;
+    border:none;
+  }
+  mark.term:hover{background:#c7ddd2;}
+  aside.tree{
+    padding:24px 18px;
+    border-right:1px solid var(--paper-line);
+    background:#fbf9f2;
+    overflow-y:auto;
+    max-height:calc(100vh - 118px);
+  }
+  aside.tree h2{
+    font-size:13px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--ink-soft);margin:0 0 8px;font-weight:600;
+  }
+  #treeRoot details{margin-left:14px;}
+  #treeRoot > details{margin-left:0;}
+  #treeRoot summary{cursor:pointer;padding:3px 0;font-size:14px;}
+  #treeRoot .node-label,#treeRoot .leaf{
+    cursor:pointer;border-radius:3px;padding:1px 4px;
+  }
+  #treeRoot .leaf{display:block;margin:2px 0 2px 14px;font-size:13.5px;}
+  #treeRoot .node-label:hover,#treeRoot .leaf:hover{background:var(--accent-soft);}
+  #treeRoot .node-label{font-weight:600;}
+  #treeRoot .found{background:var(--mark);color:var(--ink);}
+  #treeRoot .found.term{background:var(--accent-soft);color:var(--accent);outline:1px solid var(--accent);}
+  #treeRoot .dim{opacity:.5;}
+  #treeRoot .cov{font-size:12px;color:var(--ink-soft);margin-left:4px;}
+  #treeRoot .leaf:focus-visible{outline:2px solid var(--accent);}
+  section.chat{
+    display:flex;
+    flex-direction:column;
+    background:var(--panel);
+    padding:24px clamp(16px,4vw,32px);
+  }
+  #chatLog{
+    flex:1;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    padding-right:4px;
+    margin-bottom:14px;
+    min-height:260px;
+    max-height:calc(100vh - 340px);
+  }
+  .bubble{
+    max-width:88%;
+    padding:11px 14px;
+    border-radius:10px;
+    font-size:14.5px;
+  }
+  .bubble.bot{
+    background:var(--bot-bubble);
+    color:var(--ink);
+    align-self:flex-start;
+    border-top-left-radius:2px;
+  }
+  .bubble.bot .tag{
+    display:block;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--accent);
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .bubble.user{
+    background:var(--user-bubble);
+    color:#fff;
+    align-self:flex-end;
+    border-top-right-radius:2px;
+  }
+  form#askForm{
+    display:flex;
+    gap:8px;
+    border-top:1px solid var(--paper-line);
+    padding-top:14px;
+  }
+  #askInput{
+    flex:1;
+    padding:11px 13px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    font-family:inherit;
+    font-size:14.5px;
+  }
+  #askInput:focus, textarea#docInput:focus{
+    outline:2px solid var(--accent);
+    outline-offset:1px;
+  }
+  .hint{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:10px;
+  }
+  .stat-row{
+    display:flex;
+    gap:16px;
+    margin:10px 0 4px;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .stat-row strong{color:var(--ink);}
 </style>
+</head>
+<body>
+
+<header>
+  <h1>Policy Navigator</h1>
+  <p>Paste any IT security or compliance document below. Policy Navigator finds NIST 800-53 and Cybersecurity Framework references, highlights them, and explains what each one means in plain language — click a highlight or ask the assistant directly.</p>
+</header>
+
+<main>
+  <aside class="tree">
+    <h2>Browse by hierarchy</h2>
+    <p class="hint" style="margin:0 0 12px">Click a name for an explanation, or the arrow to expand. After you scan a document, each group shows how many of its entries the document references (amber/green = found, faded = not mentioned).</p>
+    <div id="treeRoot"></div>
+  </aside>
+
+  <section class="doc">
+    <h2>Your document</h2>
+    <textarea id="docInput">The organization must limit information system access to authorized users, processes, and devices (Reference: AC-1). All personnel with elevated privileges must complete role-based security training within 30 days of assignment (AT-3). Identities and credentials for authorized devices and users are managed and audited (PR.AC-1). Configuration baselines must be established and maintained for all production systems (CM-2). Any suspected incident must be reported to the security office within one hour of discovery (IR-6).</textarea>
+    <div class="doc-actions">
+      <button class="primary" id="scanBtn">Scan document</button>
+      <button class="ghost" id="loadNistBtn">Load NIST example</button>
+      <button class="ghost" id="loadAutonomyBtn">Load autonomy/M&amp;S example</button>
+      <button class="ghost" id="clearBtn">Clear</button>
+    </div>
+    <h2>Highlighted document</h2>
+    <div id="renderedDoc"><span class="empty">Click "Scan document" to highlight policy references.</span></div>
+    <div class="stat-row" id="statRow"></div>
+    <p class="hint">Recognized: NIST 800-53 controls like <strong>AC-1</strong>, <strong>CM-2(3)</strong>, CSF subcategories like <strong>PR.AC-1</strong> (highlighted <span style="color:var(--ink);background:var(--mark);padding:0 3px;border-radius:3px;">amber</span>), plus program/technical terms like <strong>CoA</strong> or <strong>surrogate models</strong> (highlighted <span style="color:var(--accent);background:var(--accent-soft);padding:0 3px;border-radius:3px;">green</span>).</p>
+  </section>
+
+  <section class="chat">
+    <h2>Ask the policy assistant</h2>
+    <div id="chatLog"></div>
+    <form id="askForm">
+      <input id="askInput" type="text" autocomplete="off" placeholder="Ask about a control, e.g. &quot;What is IA-2?&quot;">
+      <button class="primary" type="submit">Ask</button>
+    </form>
+  </section>
+</main>
+
+<script>
+// ---- Policy knowledge base -------------------------------------------------
+// Plain-language explanations for common NIST SP 800-53 controls and
+// NIST Cybersecurity Framework (CSF) subcategories. Extend this object with
+// more entries as your document set grows.
+const POLICY_KB = {
+  "AC-1":  ["Access Control Policy & Procedures", "Sets the ground rules for who is allowed to reach a system, and requires those rules to be written down, assigned an owner, and reviewed periodically."],
+  "AC-2":  ["Account Management", "Governs how user accounts get created, monitored, and disabled — including removing access promptly when someone leaves or changes roles."],
+  "AC-3":  ["Access Enforcement", "The system must actually enforce the access rules that were defined, not just document them."],
+  "AC-6":  ["Least Privilege", "People and processes should only get the minimum access they need to do their job — nothing extra 'just in case.'"],
+  "AC-17": ["Remote Access", "Defines how remote connections (VPN, remote desktop, etc.) are authorized, encrypted, and monitored."],
+  "AT-2":  ["Security Awareness Training", "Everyone in the organization gets baseline training on recognizing and avoiding security risks."],
+  "AT-3":  ["Role-Based Training", "People with specialized duties (admins, developers, incident responders) get training specific to the risks of their role."],
+  "AU-2":  ["Event Logging", "Defines which system events must be logged so there is a record to investigate later."],
+  "AU-6":  ["Audit Review, Analysis & Reporting", "Logs have to actually be reviewed on a schedule, not just collected and forgotten."],
+  "CA-2":  ["Security Assessments", "Systems must be periodically tested to confirm the security controls are working as intended."],
+  "CA-7":  ["Continuous Monitoring", "Security posture is checked on an ongoing basis rather than only during a yearly audit."],
+  "CM-2":  ["Baseline Configuration", "A documented, approved starting configuration for a system, used as the reference point for detecting unauthorized changes."],
+  "CM-3":  ["Configuration Change Control", "Changes to a system have to go through a review and approval process before they're made."],
+  "CM-6":  ["Configuration Settings", "Security-relevant settings must follow an approved, hardened standard rather than vendor defaults."],
+  "CP-9":  ["System Backup", "Requires regular backups of data and system state so operations can recover after a failure or attack."],
+  "CP-10": ["System Recovery & Reconstitution", "Defines how a system gets restored to normal operation after a disruption."],
+  "IA-2":  ["Identification & Authentication (Users)", "Every user must be uniquely identified and authenticated before getting access — no shared logins."],
+  "IA-5":  ["Authenticator Management", "Covers how passwords, tokens, and keys are issued, changed, and protected over their lifetime."],
+  "IR-4":  ["Incident Handling", "Establishes the actual process for containing, eradicating, and recovering from a security incident."],
+  "IR-6":  ["Incident Reporting", "Sets a required timeframe and channel for reporting a suspected incident once it's discovered."],
+  "MA-4":  ["Nonlocal Maintenance", "Remote maintenance sessions on systems must be authorized, logged, and terminated when finished."],
+  "MP-6":  ["Media Sanitization", "Storage media must be wiped or destroyed properly before reuse or disposal so data can't be recovered."],
+  "PE-3":  ["Physical Access Control", "Controls who can physically enter a facility or room housing sensitive systems."],
+  "PL-2":  ["System Security Plan", "Requires a living document describing a system's security controls and how they're implemented."],
+  "PS-4":  ["Personnel Termination", "Defines the steps to revoke access and recover assets when someone leaves the organization."],
+  "RA-3":  ["Risk Assessment", "Requires identifying and evaluating the risks to a system before deciding which controls are needed."],
+  "RA-5":  ["Vulnerability Monitoring & Scanning", "Systems must be regularly scanned for known vulnerabilities, and findings must be remediated."],
+  "SA-11": ["Developer Testing & Evaluation", "Requires security testing (not just functional testing) during software development."],
+  "SC-7":  ["Boundary Protection", "Monitors and controls the connections between a system and outside networks, e.g. firewalls at the network edge."],
+  "SC-8":  ["Transmission Confidentiality & Integrity", "Data moving across a network must be protected from being read or altered in transit, typically via encryption."],
+  "SC-13": ["Cryptographic Protection", "Requires use of approved encryption methods rather than ad hoc or outdated algorithms."],
+  "SI-2":  ["Flaw Remediation", "Known software flaws (patches, bugs) must be identified and fixed within a defined timeframe."],
+  "SI-4":  ["System Monitoring", "Systems must be actively monitored for signs of attack or misuse, not just logged after the fact."],
+  "PM-9":  ["Risk Management Strategy", "Requires an organization-wide strategy for how risk is identified, evaluated, and accepted."],
+  "PR.AC-1": ["CSF — Identity Management", "Identities and credentials for authorized devices and users are issued, managed, verified, revoked, and audited."],
+  "PR.AC-4": ["CSF — Access Permissions", "Access permissions are managed using the principle of least privilege and separation of duties."],
+  "PR.DS-1": ["CSF — Data-at-Rest", "Data stored on systems is protected, typically through encryption and access controls."],
+  "PR.PT-1": ["CSF — Audit Logs", "Audit and log records are determined, documented, implemented, and reviewed."],
+  "DE.CM-1": ["CSF — Network Monitoring", "The network is monitored to detect potential cybersecurity events."],
+  "DE.AE-1": ["CSF — Baseline for Anomalies", "A baseline of normal network operations is established so anomalies can be detected."],
+  "RS.RP-1": ["CSF — Response Plan", "A response plan is executed during or after a security incident."],
+  "RS.CO-2": ["CSF — Incident Reporting", "Incidents are reported consistent with established criteria."],
+  "RC.RP-1": ["CSF — Recovery Plan", "A recovery plan is executed during or after a cybersecurity incident."],
+  "ID.AM-1": ["CSF — Asset Inventory", "Physical devices and systems within the organization are inventoried."],
+  "ID.RA-1": ["CSF — Vulnerability Identification", "Asset vulnerabilities are identified and documented."]
+};
+
+// Matches 800-53 style controls (AC-1, CM-2, CM-2(3)) and CSF subcategories (PR.AC-1).
+// The family list below is a WHITELIST of real NIST SP 800-53 rev5 family codes.
+// Requiring an exact match against this list (rather than "any 2-3 uppercase
+// letters") is what keeps lookalikes like SHA-256, ISO-27001, or TLS-1 from
+// being treated as controls in the first place.
+const NIST_FAMILIES = ['AC','AT','AU','CA','CM','CP','IA','IR','MA','MP','PE','PL','PM','PS','PT','RA','SA','SC','SI','SR'];
+const FAMILY_ALT = NIST_FAMILIES.join('|');
+// Separator between a family code and its number: a hyphen (or a look-alike
+// dash that paste in from Word/PDF exports -- non-breaking hyphen, en dash,
+// minus sign) optionally padded with spaces ("AC - 1"), or plain whitespace
+// alone ("AC 1").
+const SEP_SRC = String.raw`(?:\s*[-\u2010\u2011\u2012\u2013\u2014\u2212]\s*|\s+)`;
+const CONTROL_SRC = String.raw`\b[A-Z]{2}\.[A-Z]{2}-\d+\b|\b(?:${FAMILY_ALT})${SEP_SRC}\d+(?:\([0-9]+\))?(?![A-Za-z0-9])`;
+const CONTROL_REGEX = new RegExp(CONTROL_SRC, 'gi');
+
+// Turn whatever surface form matched ("ac 01(3)", "CM\u20112", "AC-1") into a
+// canonical ID. Returns {id, base}: `id` keeps an enhancement suffix like
+// "(3)" if present, `base` is always the plain control ("CM-2") so it can be
+// looked up (or fall back) in POLICY_KB and located in the hierarchy tree.
+const FAMILY_CANON_RE = new RegExp(`^(${FAMILY_ALT})${SEP_SRC}(\\d+)(?:\\((\\d+)\\))?$`, 'i');
+function canonicalizeControl(full){
+  const csf = full.match(/^([A-Za-z]{2})\.([A-Za-z]{2})-(\d+)$/);
+  if(csf){
+    const id = `${csf[1].toUpperCase()}.${csf[2].toUpperCase()}-${parseInt(csf[3], 10)}`;
+    return { id, base: id };
+  }
+  const fam = full.match(FAMILY_CANON_RE);
+  if(fam){
+    const base = `${fam[1].toUpperCase()}-${parseInt(fam[2], 10)}`;
+    const id = fam[3] ? `${base}(${parseInt(fam[3], 10)})` : base;
+    return { id, base };
+  }
+  const up = full.toUpperCase();
+  return { id: up, base: up };
+}
+
+// ---- Program / technical term knowledge base -------------------------------
+// Same idea as POLICY_KB, but for jargon and acronyms that don't follow the
+// AC-1 / PR.AC-1 control-ID shape — e.g. autonomy and modeling & simulation
+// (M&S) terminology. Each entry lists the phrase(s) that should be
+// recognized in a document, plus the plain-language explanation shown when
+// a person clicks the highlight or asks about it.
+const TERM_KB = {
+  "coa": {
+    label: "Course of Action (CoA)",
+    match: ["courses of action", "course of action", "coa"],
+    explanation: "One candidate plan for accomplishing a mission. A 'CoA generation framework' is software that automatically creates and compares several possible plans so people don't have to build each one by hand."
+  },
+  "kinetic-nonkinetic": {
+    label: "Kinetic / Non-Kinetic Domains",
+    match: ["kinetic and non kinetic domains", "kinetic and non-kinetic domains", "non-kinetic", "non kinetic"],
+    explanation: "Kinetic actions involve physical force (weapons, movement); non-kinetic actions don't (cyber, electronic warfare, information operations). Planning 'across' both means weighing physical and non-physical options side by side."
+  },
+  "human-in-the-loop": {
+    label: "Human-in-the-Loop Latency",
+    match: ["human in the loop", "human-in-the-loop"],
+    explanation: "The delay introduced whenever an automated process pauses for a person to review or approve a step. Reducing this latency means speeding up that review, not necessarily removing the person from the decision."
+  },
+  "decision-timelines": {
+    label: "Decision-Making Timelines",
+    match: ["decision-making timelines", "decision making timelines"],
+    explanation: "The window of time available to make a useful decision before the situation moves on. As that window shrinks, there's more pressure to automate parts of planning and evaluation."
+  },
+  "multi-fidelity": {
+    label: "Multi-Fidelity Models",
+    match: ["multi fidelity models", "multi-fidelity models", "higher fidelity physics", "low order representations"],
+    explanation: "Combining a cheap, fast, simplified ('low-order') model with a slower, more detailed ('high-fidelity') one — using the fast model to explore broadly and the detailed model only where accuracy really matters."
+  },
+  "design-space": {
+    label: "Design Space",
+    match: ["design space"],
+    explanation: "The full range of possible configurations, parameters, or options under consideration. 'Iterating across a broad design space' means rapidly testing many different variations rather than refining just one."
+  },
+  "high-throughput": {
+    label: "High-Throughput Experiments",
+    match: ["high throughput experiments", "high-throughput experiments", "large scale data sets", "large-scale datasets"],
+    explanation: "Running a very large number of experiments or simulations quickly, often in parallel, to build a large dataset — instead of a handful of slow, one-off tests."
+  },
+  "surrogate-model": {
+    label: "AI/ML Surrogate Models",
+    match: ["surrogate models", "surrogate model"],
+    explanation: "A machine-learning model trained to approximate the output of a slow, expensive high-fidelity simulation, so you get a similar answer far faster — while trying to preserve the important underlying ('system dynamics') behavior."
+  },
+  "af-ms": {
+    label: "AF Modeling & Simulation (M&S) Ecosystem",
+    match: ["modeling & simulation", "modeling and simulation", "m&s ecosystem", "af planning processes"],
+    explanation: "The Air Force's broader collection of modeling and simulation tools, data, and processes used to plan, test, and evaluate systems and missions before committing to them in the real world."
+  }
+};
+
+// Build one alternation of every recognized phrase, longest first so that
+// e.g. "human-in-the-loop" is matched whole rather than a shorter substring.
+// Phrases are normalized (hyphens/spaces collapsed to a single space) so a
+// document doesn't need every hyphen/space variant listed by hand, and each
+// compiled pattern also tolerates a trailing "s" (plural) and any mix of
+// hyphens/whitespace where the canonical phrase has a space.
+function escapeRegex(str){ return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function normalizePhrase(s){ return s.toLowerCase().replace(/[-\s]+/g, ' ').trim(); }
+
+const TERM_PHRASE_TO_ID = {};
+const NORM_PHRASES = new Set();
+Object.entries(TERM_KB).forEach(([id, entry]) => {
+  entry.match.forEach(phrase => {
+    const norm = normalizePhrase(phrase);
+    TERM_PHRASE_TO_ID[norm] = id;
+    NORM_PHRASES.add(norm);
+  });
+});
+const TERM_PHRASES = [...NORM_PHRASES].sort((a, b) => b.length - a.length);
+function phraseToRegexSrc(norm){
+  return escapeRegex(norm).replace(/ /g, String.raw`(?:[-\s]+)`) + 's?';
+}
+const TERM_SRC = TERM_PHRASES.map(phraseToRegexSrc).join('|');
+
+// Combined pass: group 1 = a control ID, group 2 = a known term/phrase.
+const COMBINED_REGEX = new RegExp(`(${CONTROL_SRC})|\\b(${TERM_SRC})\\b`, 'gi');
+
+// Resolve a matched term surface (any spacing/hyphenation/plural variant)
+// back to its TERM_KB id, falling back to singularizing it once.
+function termIdFor(phrase){
+  const norm = normalizePhrase(phrase);
+  return TERM_PHRASE_TO_ID[norm] || (norm.endsWith('s') ? TERM_PHRASE_TO_ID[norm.slice(0, -1)] : undefined);
+}
+function lookupTerm(phrase){
+  return TERM_KB[termIdFor(phrase)] || TERM_KB[phrase]; // TERM_KB[phrase]: phrase is already an id (e.g. from the tree)
+}
+
+// ---- Hierarchy --------------------------------------------------------------
+// NIST is already layered: 800-53 is family > control, and the CSF is
+// function > category > subcategory. Those groupings are built automatically
+// from the IDs in POLICY_KB. The program/technical terms are grouped by hand in
+// TERM_TREE below (edit it to reorganize).
+const FAMILY_NAMES = {AC:'Access Control',AT:'Awareness & Training',AU:'Audit & Accountability',CA:'Assessment, Authorization & Monitoring',CM:'Configuration Management',CP:'Contingency Planning',IA:'Identification & Authentication',IR:'Incident Response',MA:'Maintenance',MP:'Media Protection',PE:'Physical & Environmental Protection',PL:'Planning',PM:'Program Management',PS:'Personnel Security',RA:'Risk Assessment',SA:'System & Services Acquisition',SC:'System & Communications Protection',SI:'System & Information Integrity'};
+const CSF_FUNCTIONS = {ID:'Identify',PR:'Protect',DE:'Detect',RS:'Respond',RC:'Recover'};
+const CSF_CATEGORIES = {'ID.AM':'Asset Management','ID.RA':'Risk Assessment','PR.AC':'Identity Management & Access Control','PR.DS':'Data Security','PR.PT':'Protective Technology','DE.AE':'Anomalies & Events','DE.CM':'Security Continuous Monitoring','RS.RP':'Response Planning','RS.CO':'Communications','RC.RP':'Recovery Planning'};
+
+function termNode(id, children){ return {kind:'term', id, children: children || []}; }
+
+function nodeTitle(n){
+  if(n.kind === 'control') return `${n.id} — ${POLICY_KB[n.id][0]}`;
+  if(n.kind === 'term') return TERM_KB[n.id].label;
+  if(n.code) return `${n.code} — ${n.label}`;
+  return n.label;
+}
+function ownKey(n){
+  return n.kind === 'control' ? 'c:' + n.id : n.kind === 'term' ? 't:' + n.id : null;
+}
+function nodeKeys(n){
+  let keys = ownKey(n) ? [ownKey(n)] : [];
+  (n.children || []).forEach(c => { keys = keys.concat(nodeKeys(c)); });
+  return keys;
+}
+
+function buildHierarchy(){
+  const numOf = id => parseInt(id.split('-')[1], 10);
+  const ids = Object.keys(POLICY_KB);
+
+  const nist = {kind:'root', label:'NIST SP 800-53 controls', children:[],
+    desc:'The NIST SP 800-53 catalog of security and privacy controls, organized into families such as AC (Access Control) and IR (Incident Response).'};
+  const fams = {};
+  ids.filter(id => !id.includes('.')).sort((a, b) => numOf(a) - numOf(b)).forEach(id => {
+    const code = id.split('-')[0];
+    if(!fams[code]) fams[code] = {kind:'family', code, label: FAMILY_NAMES[code] || code, children:[]};
+    fams[code].children.push({kind:'control', id, children:[]});
+  });
+  nist.children = Object.keys(fams).sort().map(c => fams[c]);
+
+  const csf = {kind:'root', label:'NIST Cybersecurity Framework', children:[],
+    desc:'The NIST CSF has five functions (Identify, Protect, Detect, Respond, Recover). Each function splits into categories, which split into subcategories.'};
+  const funcs = {};
+  Object.keys(CSF_FUNCTIONS).forEach(f => { funcs[f] = {kind:'function', code:f, label:CSF_FUNCTIONS[f], children:[]}; });
+  const cats = {};
+  ids.filter(id => id.includes('.')).forEach(id => {
+    const prefix = id.split('-')[0];
+    const f = prefix.split('.')[0];
+    if(!funcs[f]) return;
+    if(!cats[prefix]){
+      cats[prefix] = {kind:'category', code:prefix, label: CSF_CATEGORIES[prefix] || prefix, children:[]};
+      funcs[f].children.push(cats[prefix]);
+    }
+    cats[prefix].children.push({kind:'control', id, children:[]});
+  });
+  csf.children = Object.keys(funcs).map(f => funcs[f]).filter(f => f.children.length);
+
+  const planning = {kind:'topic', label:'Autonomy & Planning', children:['coa','kinetic-nonkinetic','human-in-the-loop','decision-timelines'].map(id => termNode(id)),
+    desc:'Terms about generating, evaluating, and adapting courses of action quickly, with less waiting on human review.'};
+  const multiFidelity = termNode('multi-fidelity', [termNode('surrogate-model'), termNode('high-throughput')]);
+  const afms = termNode('af-ms', [multiFidelity, termNode('design-space')]);
+  const sim = {kind:'topic', label:'Modeling & Simulation', children:[afms],
+    desc:'Terms about mixing fast and detailed models, and using AI surrogates to explore a large design space.'};
+
+  return [nist, csf, planning, sim];
+}
+
+const HIERARCHY = buildHierarchy();
+const PATHS = {};        // key ('c:AC-1' / 't:coa') -> "Root › Group › ..."
+const CODE_GROUPS = {};  // 'AC', 'PR.AC', 'PR' -> node
+const NAME_GROUPS = {};  // lowercase name/phrase -> [nodes]
+(function index(nodes, parent){
+  nodes.forEach(n => {
+    n.parent = parent;
+    n.title = nodeTitle(n);
+    const key = ownKey(n);
+    if(key){
+      const trail = [];
+      for(let a = parent; a; a = a.parent) trail.unshift(a.title);
+      PATHS[key] = trail.join(' › ');
+    }
+    if(n.children.length){
+      const names = [];
+      if(n.kind === 'term'){ names.push(TERM_KB[n.id].label, ...TERM_KB[n.id].match); }
+      else { names.push(n.label); }
+      if(n.code) CODE_GROUPS[n.code.toUpperCase()] = n;
+      names.forEach(nm => {
+        [nm, nm.replace(/&/g, 'and')].forEach(v => {
+          const k = v.toLowerCase();
+          if(k.length < 5) return;
+          (NAME_GROUPS[k] = NAME_GROUPS[k] || []).push(n);
+        });
+      });
+      index(n.children, n);
+    }
+  });
+})(HIERARCHY, null);
+
+// Document-scan state, used to mark which nodes a document references.
+let lastFound = new Set();
+let lastScanned = false;
+const TREE_ENTRIES = [];
+
+function renderNode(n, depth){
+  const entry = {node:n, keys: nodeKeys(n)};
+  let wrap;
+  if(n.children.length){
+    wrap = document.createElement('details');
+    if(depth === 0) wrap.open = true;
+    const sum = document.createElement('summary');
+    const lab = document.createElement('span');
+    lab.className = 'node-label' + (n.kind === 'term' ? ' term' : '');
+    lab.textContent = n.title;
+    const cov = document.createElement('span');
+    cov.className = 'cov';
+    sum.append(lab, cov);
+    wrap.appendChild(sum);
+    lab.addEventListener('click', e => { e.preventDefault(); explainNode(n, true); });
+    n.children.forEach(c => wrap.appendChild(renderNode(c, depth + 1)));
+    entry.labelEl = lab;
+    entry.covEl = cov;
+  } else {
+    wrap = document.createElement('div');
+    wrap.className = 'leaf' + (n.kind === 'term' ? ' term' : '');
+    wrap.textContent = n.title;
+    wrap.tabIndex = 0;
+    wrap.addEventListener('click', () => explainNode(n, true));
+    wrap.addEventListener('keydown', e => { if(e.key === 'Enter') explainNode(n, true); });
+    entry.labelEl = wrap;
+  }
+  TREE_ENTRIES.push(entry);
+  return wrap;
+}
+HIERARCHY.forEach(r => document.getElementById('treeRoot').appendChild(renderNode(r, 0)));
+
+function updateTree(){
+  TREE_ENTRIES.forEach(en => {
+    const own = ownKey(en.node);
+    const hits = en.keys.filter(k => lastFound.has(k)).length;
+    en.labelEl.classList.toggle('found', !!(lastScanned && own && lastFound.has(own)));
+    en.labelEl.classList.toggle('dim', lastScanned && hits === 0);
+    if(en.covEl){
+      en.covEl.textContent = lastScanned ? ` ${hits}/${en.keys.length}` : ` (${en.keys.length})`;
+    }
+  });
+}
+
+// ---- Document scanning / highlighting --------------------------------------
+const docInput = document.getElementById('docInput');
+const renderedDoc = document.getElementById('renderedDoc');
+const statRow = document.getElementById('statRow');
+
+const SAMPLE_NIST = docInput.value;
+const SAMPLE_AUTONOMY = "Effective autonomy relies on courses of action (CoA) generating frameworks that can rapidly plan, allocate resources, execute, and adapt missions across kinetic and non kinetic domains. Evaluating these CoA for decision-making while minimizing human in the loop latency is crucial given the shrinking decision-making timelines.\n\nCreate and integrate multi fidelity models that combine fast, low order representations with higher fidelity physics where needed, enabling rapid iteration across a broad design space. Generate large scale data sets through high throughput experiments, leveraging AI/ML based surrogate models to approximate expensive high fidelity calculations while preserving key system dynamics. Modern AF planning processes, and the broader AF Modeling & Simulation (M&S) ecosystem.";
+
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function scanDocument(){
+  const text = docInput.value;
+  if(!text.trim()){
+    renderedDoc.innerHTML = '<span class="empty">Paste a document and click "Scan document".</span>';
+    statRow.textContent = '';
+    lastFound = new Set(); lastScanned = false; updateTree();
+    return;
+  }
+  // Match against the RAW text first, then escape each piece as it's
+  // assembled. Escaping the whole string up front (e.g. turning "&" into
+  // "&amp;") would break phrase matching for terms like "Modeling & Simulation".
+  const foundControls = new Set();  // canonical base IDs, e.g. "AC-1" (enhancement stripped)
+  const foundTerms = new Set();
+  COMBINED_REGEX.lastIndex = 0;
+  let result = '';
+  let lastEnd = 0;
+  let match;
+  while((match = COMBINED_REGEX.exec(text)) !== null){
+    const [full, control, term] = match;
+    result += escapeHtml(text.slice(lastEnd, match.index));
+    if(control){
+      const { id, base } = canonicalizeControl(control);
+      foundControls.add(base);
+      result += `<mark class="control" data-type="control" data-id="${escapeHtml(id)}">${escapeHtml(full)}</mark>`;
+    } else {
+      const tid = termIdFor(term);
+      foundTerms.add(tid || normalizePhrase(term));
+      result += `<mark class="term" data-type="term" data-id="${escapeHtml(term)}">${escapeHtml(full)}</mark>`;
+    }
+    lastEnd = match.index + full.length;
+    if(match.index === COMBINED_REGEX.lastIndex) COMBINED_REGEX.lastIndex++; // guard against zero-length matches
+  }
+  result += escapeHtml(text.slice(lastEnd));
+  renderedDoc.innerHTML = result;
+  lastFound = new Set([...foundControls].map(i => 'c:' + i).concat([...foundTerms].map(i => 't:' + i)));
+  lastScanned = true;
+  updateTree();
+
+  const knownControls = [...foundControls].filter(id => POLICY_KB[id]).length;
+  const parts = [];
+  if(foundControls.size) parts.push(`<strong>${foundControls.size}</strong> control reference${foundControls.size===1?'':'s'} (<strong>${knownControls}</strong> known)`);
+  if(foundTerms.size) parts.push(`<strong>${foundTerms.size}</strong> program/technical term${foundTerms.size===1?'':'s'}`);
+  statRow.innerHTML = parts.length ? `Found ${parts.join(' · ')}` : 'No recognized policy controls or technical terms found in this text.';
+
+  renderedDoc.querySelectorAll('mark').forEach(el => {
+    el.addEventListener('click', () => explain(el.dataset.id, el.dataset.type, true));
+  });
+}
+
+document.getElementById('scanBtn').addEventListener('click', scanDocument);
+document.getElementById('clearBtn').addEventListener('click', () => {
+  docInput.value = '';
+  scanDocument();
+});
+document.getElementById('loadNistBtn').addEventListener('click', () => {
+  docInput.value = SAMPLE_NIST;
+  scanDocument();
+});
+document.getElementById('loadAutonomyBtn').addEventListener('click', () => {
+  docInput.value = SAMPLE_AUTONOMY;
+  scanDocument();
+});
+
+// ---- Chat / explainer -------------------------------------------------------
+const chatLog = document.getElementById('chatLog');
+const askForm = document.getElementById('askForm');
+const askInput = document.getElementById('askInput');
+
+function addBubble(text, sender){
+  const div = document.createElement('div');
+  div.className = `bubble ${sender}`;
+  if(sender === 'bot'){
+    div.innerHTML = `<span class="tag">Policy Assistant</span>${text}`;
+  } else {
+    div.textContent = text;
+  }
+  chatLog.appendChild(div);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function findMatchIn(text){
+  COMBINED_REGEX.lastIndex = 0;
+  const m = COMBINED_REGEX.exec(text);
+  COMBINED_REGEX.lastIndex = 0; // reset stateful global regex
+  if(!m) return null;
+  const [, control, term] = m;
+  if(control) return { type: 'control', id: canonicalizeControl(control).id };
+  return { type: 'term', id: term };
+}
+
+function whereItFits(key){
+  const p = PATHS[key];
+  return p ? `<br><em>Where it fits: ${escapeHtml(p)}</em>` : '';
+}
+
+function explain(rawId, type, fromClick){
+  if(type === 'control'){
+    // rawId may carry an enhancement, e.g. "CM-2(3)" — fall back to the base
+    // control ("CM-2") for the lookup if that exact enhancement isn't in the KB.
+    const id = rawId.toUpperCase();
+    const base = id.replace(/\(\d+\)$/, '');
+    if(fromClick) addBubble(`What does ${id} mean?`, 'user');
+    const entry = POLICY_KB[id] || POLICY_KB[base];
+    if(entry){
+      const note = (!POLICY_KB[id] && id !== base)
+        ? `<br><span style="color:var(--ink-soft);font-size:13px">(No separate entry for this enhancement yet — showing the base control, ${base}.)</span>` : '';
+      addBubble(`<strong>${id} — ${entry[0]}</strong><br>${entry[1]}${note}${whereItFits('c:' + base)}`, 'bot');
+    } else {
+      addBubble(`I don't have ${id} in my knowledge base yet. Add it to the <code>POLICY_KB</code> object in this file with a short plain-language explanation, and it'll show up here next time.`, 'bot');
+    }
+    return;
+  }
+  // type === 'term'
+  if(fromClick) addBubble(`What does "${rawId}" mean?`, 'user');
+  const kb = lookupTerm(rawId);
+  const tid = termIdFor(rawId) || rawId;
+  if(kb){
+    addBubble(`<strong>${kb.label}</strong><br>${kb.explanation}${whereItFits('t:' + tid)}`, 'bot');
+  } else {
+    addBubble(`I recognize "${rawId}" as a term, but I don't have an explanation for it yet. Add it to <code>TERM_KB</code> to teach me.`, 'bot');
+  }
+}
+
+// Explain any node in the hierarchy tree: leaves get their normal explanation,
+// groups (families, categories, functions, topics) get a summary of their contents.
+function explainNode(n, fromClick){
+  if(n.kind === 'control'){ explain(n.id, 'control', fromClick); return; }
+  if(n.kind === 'term' && !n.children.length){
+    if(fromClick) addBubble(`What does "${n.title}" mean?`, 'user');
+    explain(n.id, 'term', false);
+    return;
+  }
+  if(fromClick) addBubble(`What's in ${n.title}?`, 'user');
+  const keys = nodeKeys(n).filter(k => k !== ownKey(n)); // entries inside the group, not the group itself
+  const hits = keys.filter(k => lastFound.has(k)).length;
+  let head;
+  if(n.kind === 'term'){
+    head = `<strong>${escapeHtml(n.title)}</strong><br>${TERM_KB[n.id].explanation}`;
+  } else {
+    const desc = n.desc ||
+      (n.kind === 'family' ? `A family of NIST SP 800-53 controls.` :
+       n.kind === 'function' ? `A top-level function of the NIST Cybersecurity Framework.` :
+       `A category of the NIST Cybersecurity Framework.`);
+    head = `<strong>${escapeHtml(n.title)}</strong><br>${escapeHtml(desc)}`;
+  }
+  const rows = n.children.map(c => {
+    const ck = nodeKeys(c);
+    const found = ck.filter(k => lastFound.has(k)).length;
+    const mark = lastScanned ? (found ? '✓ ' : '– ') : '• ';
+    const extra = c.children.length ? ` (${lastScanned ? found + '/' : ''}${ck.length})` : '';
+    return `${mark}${escapeHtml(c.title)}${extra}`;
+  }).join('<br>');
+  const status = lastScanned
+    ? `<br><br>Your document references ${hits} of ${keys.length} entries here (✓ = found).`
+    : '';
+  const loc = n.parent ? `<br><em>Where it fits: ${escapeHtml(n.parent.title)}</em>` : '';
+  addBubble(`${head}<br><br>Contains:<br>${rows}${status}${loc}`, 'bot');
+}
+
+// Questions like "What's in the AC family?" or "list the Protect function".
+const GROUP_TRIGGER = /\b(family|families|category|categories|function|group|under|inside|within|contains?|list|show|children)\b|what(?:'s|\s+is|\s+are)\s+(?:in|under|inside)\b/i;
+function findGroups(raw){
+  if(!GROUP_TRIGGER.test(raw)) return [];
+  const hits = [];
+  const add = n => { if(n && !hits.includes(n)) hits.push(n); };
+  const kw = raw.match(/\b([A-Za-z]{2}(?:\.[A-Za-z]{2})?)\s+(?:family|category|function|group)\b/i);
+  if(kw) add(CODE_GROUPS[kw[1].toUpperCase()]);
+  (raw.match(/\b[A-Z]{2}(?:\.[A-Z]{2})?\b/g) || []).forEach(tok => {
+    if(tok === 'ID' && !kw) return; // "ID" is usually just the word
+    add(CODE_GROUPS[tok]);
+  });
+  if(hits.length) return hits;
+  const q = raw.toLowerCase();
+  let best = 0, found = [];
+  Object.keys(NAME_GROUPS).forEach(k => {
+    if(new RegExp('\\b' + escapeRegex(k) + '\\b').test(q)){
+      if(k.length > best){ best = k.length; found = NAME_GROUPS[k].slice(); }
+      else if(k.length === best){ found = found.concat(NAME_GROUPS[k]); }
+    }
+  });
+  return found;
+}
+
+askForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const raw = askInput.value.trim();
+  if(!raw) return;
+  addBubble(raw, 'user');
+  askInput.value = '';
+
+  const match = findMatchIn(raw);
+  if(match && match.type === 'control'){
+    explain(match.id, 'control', false);
+    return;
+  }
+  const groups = findGroups(raw);
+  if(groups.length){
+    groups.forEach(g => explainNode(g, false));
+  } else if(match){
+    explain(match.id, match.type, false);
+  } else {
+    addBubble(`I look for control IDs like <strong>AC-1</strong>, program terms like <strong>CoA</strong>, and groups like <strong>the AC family</strong>. Try "What is IA-2?", "What is a CoA?", or "What's in the Protect function?" — or browse the hierarchy on the left.`, 'bot');
+  }
+});
+
+// Greeting + initial scan
+addBubble(`Hi! Paste a policy or program document and click "Scan document," browse the hierarchy on the left, or ask me here — for example, <strong>"What is AC-1?"</strong>, <strong>"What is a CoA?"</strong>, or <strong>"What's in the AC family?"</strong>`, 'bot');
+scanDocument();
+</script>
+</body>
+</html>
