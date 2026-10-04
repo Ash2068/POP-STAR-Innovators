@@ -1,0 +1,52 @@
+// "High-fidelity" model: run every generated document through the real
+// Policy Navigator (click "Scan document") and record what it highlighted.
+//   node run_navigator.js docs.json results.json
+const { loadPage } = require('./common');
+const fs = require('fs');
+
+const docs = JSON.parse(fs.readFileSync(process.argv[2]));
+const outPath = process.argv[3];
+
+const w = loadPage();
+const d = w.document;
+const input = d.getElementById('docInput');
+const scanBtn = d.getElementById('scanBtn');
+const rendered = d.getElementById('renderedDoc');
+// Canonicalize before checking the KB -- matches what explain() actually does
+// when a person clicks the highlight (base-control fallback for enhancements).
+const isKnownControl = w.eval('(t) => { const c = canonicalizeControl(t); return !!(POLICY_KB[c.id] || POLICY_KB[c.base]); }');
+const isKnownTerm = w.eval('(t) => !!lookupTerm(t)');
+
+function collectMarks(text) {
+  let off = 0, bad = false;
+  const marks = [];
+  rendered.childNodes.forEach(n => {
+    const t = n.textContent;
+    if (n.nodeType === 1 && n.tagName === 'MARK') {
+      const type = n.dataset.type;
+      marks.push({ s: off, e: off + t.length, type, text: t,
+                   known: type === 'control' ? isKnownControl(t) : isKnownTerm(t) });
+    }
+    off += t.length;
+  });
+  if (off !== text.length) bad = true; // rendered text must equal input text
+  return { marks, bad };
+}
+
+for (let i = 0; i < 30; i++) { input.value = docs[i % docs.length].text; scanBtn.click(); } // warm-up
+
+const results = [];
+let mismatches = 0;
+docs.forEach((doc, i) => {
+  input.value = doc.text;
+  const a = process.hrtime.bigint();
+  scanBtn.click();
+  const b = process.hrtime.bigint();
+  const { marks, bad } = collectMarks(doc.text);
+  if (bad) mismatches++;
+  results.push({ id: doc.id, ms: Number(b - a) / 1e6, marks });
+  if ((i + 1) % 1000 === 0) console.log(`  scanned ${i + 1}/${docs.length}`);
+});
+fs.writeFileSync(outPath, JSON.stringify(results));
+const mean = results.reduce((s, r) => s + r.ms, 0) / results.length;
+console.log(`scanned ${results.length} docs, mean ${mean.toFixed(2)} ms/doc, offset mismatches: ${mismatches}`);
